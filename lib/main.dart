@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dashboard_page.dart';
+import 'home_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,35 +11,24 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'GengarCloud',
-      debugShowCheckedModeBanner: false,
+      title: 'NIGHT Bug WhatsApp',
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF060B14),
+        scaffoldBackgroundColor: const Color(0xFF050810),
         useMaterial3: true,
       ),
-      home: DashboardPage(
-        username: 'DemoUser',
-        password: 'demo123',
-        role: 'admin',
-        expiredDate: '2026-12-31',
-        sessionKey: 'demo-session-123',
-        listBug: [],
-        listDoos: [],
-        news: [
-          {
-            'title': 'Selamat Datang di GengarCloud',
-            'desc': 'Ini adalah tampilan dashboard dengan tema merah',
-          },
-          {
-            'title': 'Fitur Baru Tersedia',
-            'desc': 'Nikmati berbagai fitur terbaru kami',
-          },
-          {
-            'title': 'Tips & Trik',
-            'desc': 'Pelajari cara maksimalkan penggunaan',
-          },
+      home: HomePage(
+        username: 'NIGHT User',
+        password: 'password',
+        sessionKey: 'test_session_key',
+        listBug: [
+          {'bug_id': 'cspam', 'bug_name': 'C Spam'},
+          {'bug_id': 'ios_invis', 'bug_name': 'iOS Invisible'},
+          {'bug_id': 'text', 'bug_name': 'Text Message'},
         ],
+        role: 'USER',
+        expiredDate: '2026-12-31',
       ),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
