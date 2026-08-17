@@ -30,6 +30,13 @@ jobs:
     - name: Enable web
       run: flutter config --enable-web
     
+    # 🔥 STEP PENTING: Buat folder web dengan flutter create
+    - name: Create web folder
+      run: |
+        if [ ! -d "web" ]; then
+          flutter create --platforms=web .
+        fi
+    
     - name: Build web
       run: flutter build web --release
     
