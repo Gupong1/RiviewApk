@@ -1,40 +1,75 @@
-name: Deploy Flutter Web to Pages
+name: Deploy Flutter Web to GitHub Pages
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pull-requests: write
+    
     steps:
-      - uses: actions/checkout@v4
-      
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-      
-      # ⚠️ BARIS INI DITAMBAHIN BUAT BIKIN FOLDER WEB
-      - run: flutter create --platforms=web .
-      
-      - run: flutter pub get
-      - run: flutter build web --release --base-href /RiviewApk/
-      
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: build/web
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/deploy-pages@v4
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.13.0'
+        channel: 'stable'
+    
+    - name: Get dependencies
+      run: flutter pub get
+    
+    - name: Enable web
+      run: flutter config --enable-web
+    
+    - name: Build web
+      run: flutter build web --release
+    
+    - name: Deploy to GitHub Pages
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./build/web
+        publish_branch: gh-pages
+        force_orphan: true
+    
+    - name: Upload build artifact for PR
+      if: github.event_name == 'pull_request'
+      uses: actions/upload-artifact@v3
+      with:
+        name: web-build
+        path: build/web/
+        retention-days: 7
+    
+    - name: Comment PR with preview link
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const prNumber = context.payload.pull_request.number;
+          const repo = context.repo;
+          const baseUrl = `https://${repo.owner}.github.io/${repo.repo}/`;
+          
+          const comment = `
+          ## 🚀 Preview Ready!
+          
+          🔗 **Preview URL:** ${baseUrl}
+          
+          ✅ Build successful for PR #${prNumber}
+          `;
+          
+          await github.rest.issues.createComment({
+            issue_number: prNumber,
+            owner: repo.owner,
+            repo: repo.repo,
+            body: comment
+          });
